@@ -30,4 +30,10 @@ Select a level and start playing
 5. `D` or `RIGHT` to move right  
 6. `Space` to shoot  
 
+### Documentation  
+Generate documentation of this project by:  
+```bash
+javadoc -d documentation *.java
+```
+
 ------
