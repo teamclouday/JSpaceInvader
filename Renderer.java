@@ -21,7 +21,7 @@ public class Renderer implements KeyListener
     // game status and properties
     private boolean gameExit = false;
     private int maxPosX, maxPosY;
-    private final int fps = 40;
+    private final int fps = 60;
     //                           UP     DOWN   LEFT   RIGHT  SHOOT (space)
     private boolean[] control = {false, false, false, false, false};
     private int score = 0;
@@ -45,16 +45,21 @@ public class Renderer implements KeyListener
         myFrame.add(myPanel);
         myFrame.setResizable(false);
         myFrame.addKeyListener(this);
-        myFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        myFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         myFrame.pack();
         myFrame.setLocationRelativeTo(null);
         myFrame.setVisible(true);
-        myFrame.setBackground(Color.WHITE);
+        myFrame.setBackground(Color.BLACK);
         myFrame.setAlwaysOnTop(true);
         // initialize game objects
         objFPSController = new GameObject.FPSController(fps);
         objBackground = new GameObject.Background(maxPosX, maxPosY);
         objMyShip = new GameObject.MyShip(level, maxPosX / 2, maxPosY - 1, maxPosX, maxPosY);
+        objEnemies = new LinkedList<>();
+        objBullets = new LinkedList<>();
+        objEnemies.add(new GameObject.EnemyA(maxPosX/2-10, 0, maxPosX, maxPosY)); // for test
+        objEnemies.add(new GameObject.EnemyB(maxPosX/2+10, 1, maxPosX, maxPosY)); // for test
+        objEnemies.add(new GameObject.EnemyC(maxPosX/2, 1, maxPosX, maxPosY)); // for test
     }
 
     // main loop for the game
@@ -78,10 +83,16 @@ public class Renderer implements KeyListener
         if(frame)
         {
             processLogic();
+            for(GameObject.Bullet bullet : objBullets)
+                commands.addAll(bullet.update(frame));
         }
         else
         {
             commands.addAll(objMyShip.update(GameObject.MoveDirection.DIR_NONE));
+            for(GameObject.SpaceShip ship : objEnemies)
+                commands.addAll(ship.update(GameObject.MoveDirection.DIR_NONE));
+            for(GameObject.Bullet bullet : objBullets)
+                commands.addAll(bullet.update(frame));
         }
         myPanel.addCommand(commands);
     }
@@ -171,7 +182,7 @@ public class Renderer implements KeyListener
     public class MyPanel extends JPanel
     {
         static final long serialVersionUID = 1234L;
-        static final int fontSize = 16;
+        static final int fontSize = 12;
 
         private ArrayList<RenderCommand> commands;
         private Font myFont = new Font(Font.MONOSPACED, Font.PLAIN, fontSize);
@@ -193,11 +204,11 @@ public class Renderer implements KeyListener
             g.setFont(myFont);
             for(RenderCommand command : commands)
             {
-                // fill background with white
-                g.setColor(Color.WHITE);
+                // fill background with black
+                g.setColor(Color.BLACK);
                 g.fillRect(command.getX()*chrWidth, command.getY()*chrHeight, command.getData().length()*chrWidth, chrHeight);
                 // draw actual data
-                g.setColor(Color.BLACK);
+                g.setColor(Color.WHITE);
                 g.drawString(command.getData(), command.getX()*chrWidth, (command.getY()+1)*chrHeight-5);
             }
             // clear drawing commands

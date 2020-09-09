@@ -43,12 +43,17 @@ public class GameObject
             }
         }
 
-        public ArrayList<Renderer.RenderCommand> update()
+        public ArrayList<Renderer.RenderCommand> update(boolean frame)
         {
             ArrayList<Renderer.RenderCommand> commands = new ArrayList<>();
-            commands.add(new Renderer.RenderCommand(xPos, yPos, " "));
-            yPos += yDelta;
-            commands.add(new Renderer.RenderCommand(xPos, yPos, design));
+            if(frame)
+            {
+                commands.add(new Renderer.RenderCommand(xPos, yPos, " "));
+                yPos += yDelta;
+                commands.add(new Renderer.RenderCommand(xPos, yPos, design));
+            }
+            else
+                commands.add(new Renderer.RenderCommand(xPos, yPos, design));
             return commands;
         }
 
@@ -112,7 +117,7 @@ public class GameObject
                     break;
                 case DIR_UP:
                     yPos -= 1;
-                    yPos = (yPos < (yMax/2 + 1)) ? (yMax/2 + 1) : yPos;
+                    yPos = (yPos < yMax/3) ? yMax/3 : yPos;
                     break;
                 case DIR_LEFT:
                     xPos -= 1;
@@ -188,7 +193,7 @@ public class GameObject
             {
                 case DIR_DOWN:
                     yPos += 1;
-                    yPos = (yPos > yMax) ? yMax : yPos;
+                    yPos = (yPos > yMax/2) ? yMax/2 : yPos;
                     break;
                 case DIR_UP:
                     yPos -= 1;
@@ -196,11 +201,11 @@ public class GameObject
                     break;
                 case DIR_LEFT:
                     xPos -= 1;
-                    xPos = (xPos < 0) ? 0 : xPos;
+                    xPos = (xPos < 1) ? 1 : xPos;
                     break;
                 case DIR_RIGHT:
                     xPos += 1;
-                    xPos = (xPos > xMax) ? xMax : xPos;
+                    xPos = (xPos > xMax-1) ? xMax-1 : xPos;
                     break;
                 default:
                     break;
@@ -268,19 +273,19 @@ public class GameObject
             {
                 case DIR_DOWN:
                     yPos += 1;
-                    yPos = (yPos > yMax) ? yMax : yPos;
+                    yPos = (yPos > yMax/2) ? yMax/2 : yPos;
                     break;
                 case DIR_UP:
                     yPos -= 1;
-                    yPos = (yPos < 0) ? 0 : yPos;
+                    yPos = (yPos < 1) ? 1 : yPos;
                     break;
                 case DIR_LEFT:
                     xPos -= 1;
-                    xPos = (xPos < 0) ? 0 : xPos;
+                    xPos = (xPos < 2) ? 2 : xPos;
                     break;
                 case DIR_RIGHT:
                     xPos += 1;
-                    xPos = (xPos > xMax) ? xMax : xPos;
+                    xPos = (xPos > xMax-2) ? xMax-2 : xPos;
                     break;
                 default:
                     break;
@@ -354,19 +359,19 @@ public class GameObject
             {
                 case DIR_DOWN:
                     yPos += 1;
-                    yPos = (yPos > yMax) ? yMax : yPos;
+                    yPos = (yPos > yMax/2) ? yMax/2 : yPos;
                     break;
                 case DIR_UP:
                     yPos -= 1;
-                    yPos = (yPos < 0) ? 0 : yPos;
+                    yPos = (yPos < 1) ? 1 : yPos;
                     break;
                 case DIR_LEFT:
                     xPos -= 1;
-                    xPos = (xPos < 0) ? 0 : xPos;
+                    xPos = (xPos < 4) ? 4 : xPos;
                     break;
                 case DIR_RIGHT:
                     xPos += 1;
-                    xPos = (xPos > xMax) ? xMax : xPos;
+                    xPos = (xPos > xMax-4) ? xMax-4 : xPos;
                     break;
                 default:
                     break;

@@ -1,12 +1,12 @@
 Meteorites (falling from up to down, generated randomly):
 |
 
-Spaceship (Me, HP defined by difficulty, [3, 6, 12]):
+Spaceship (Me, HP defined by difficulty, [3, 6, 12]) (move area 1/3 of screen):
   A
  | |
 <=-=>
 
-Spaceship (Enemies, randomly shoot, randomly spawned, move randomly, bullets cause no harm between them, no overlap):
+Spaceship (Enemies, randomly shoot, randomly spawned, move randomly, bullets cause no harm between them, no overlap) (move area 1/2 of screen):
 1) HP = 2
 <v>
 
