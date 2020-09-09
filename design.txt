@@ -1,0 +1,25 @@
+Meteorites (falling from up to down, generated randomly):
+|
+
+Spaceship (Me, HP defined by difficulty, [3, 6, 12]):
+  A
+ | |
+<=-=>
+
+Spaceship (Enemies, randomly shoot, randomly spawned, move randomly, bullets cause no harm between them, no overlap):
+1) HP = 2
+<v>
+
+2) HP = 4
+[===]
+ ( )
+  v
+
+3) HP = 10
+<[-----]>
+  #####
+   %%%
+    V
+
+Bullet (Cause HP - 1):
+*
