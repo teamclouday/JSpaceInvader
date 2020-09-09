@@ -480,7 +480,7 @@ public class GameObject
             this.yMax = yMax;
             myRand = new Random();
             data = new LinkedList<>();
-            for(int i = 0; i < this.yMax; i++)
+            for(int i = 0; i <= this.yMax + 1; i++)
             {
                 data.add(randomizeNewLine(i));
             }

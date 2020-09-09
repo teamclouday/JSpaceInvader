@@ -224,7 +224,7 @@ public class Renderer implements KeyListener
                 g.fillRect(command.getX()*chrWidth, command.getY()*chrHeight, command.getData().length()*chrWidth, chrHeight);
                 // draw actual data
                 g.setColor(Color.WHITE);
-                g.drawString(command.getData(), command.getX()*chrWidth, (command.getY()+1)*chrHeight-5);
+                g.drawString(command.getData(), command.getX()*chrWidth, (command.getY()+1)*chrHeight);
             }
             // clear drawing commands
             commands.clear();
