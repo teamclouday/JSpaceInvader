@@ -529,7 +529,7 @@ public class GameObject
         private ArrayList<Renderer.RenderCommand> randomizeNewLine(int y)
         {
             ArrayList<Renderer.RenderCommand> newline = new ArrayList<>();
-            for(int i = 0; i < xMax; i++)
+            for(int i = 0; i <= xMax; i++)
             {
                 if(myRand.nextInt(1000) < sparsity)
                 {
