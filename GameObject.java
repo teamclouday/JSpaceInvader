@@ -4,8 +4,14 @@ import java.util.Random;
 import java.util.LinkedList;
 import java.util.ArrayList;
 
+/**
+ * Stores all game objects as static classes
+ */
 public class GameObject
 {
+    /**
+     * Define move direction types
+     */
     public static enum MoveDirection
     {
         DIR_UP(0),
@@ -17,6 +23,9 @@ public class GameObject
         private MoveDirection(int num){this.num = num;}
     }
 
+    /**
+     * The bullet class
+     */
     public static class Bullet
     {
         private final String design = "*";
@@ -43,6 +52,11 @@ public class GameObject
             }
         }
 
+        /**
+         * Update the bullet object based on current frame
+         * @param frame
+         * @return array of render commands
+         */
         public ArrayList<Renderer.RenderCommand> update(boolean frame)
         {
             ArrayList<Renderer.RenderCommand> commands = new ArrayList<>();
@@ -61,17 +75,45 @@ public class GameObject
         public int getY(){return yPos;}
     }
 
-    // define abstract class for ships
+    /**
+     * The abstract Space Ship class for all space ships
+     */
     public static abstract class SpaceShip
     {
-        public boolean isEnemy; // whether the ship is an enemy
-        public abstract ArrayList<Renderer.RenderCommand> update(MoveDirection dir); // update the ship by movement
-        public abstract ArrayList<Renderer.RenderCommand> explode(); // update the ship after explosion
-        public abstract void shoot(); // ship shoot bullets
-        public abstract void hit(); // ship get hit
-        public abstract boolean isAlive(); // is ship alive?
+        /**
+         * Whether the ship is an enemy
+         */
+        public boolean isEnemy;
+        /**
+         * Update the ship position based on direction
+         * @param dir
+         * @return array of render commands
+         */
+        public abstract ArrayList<Renderer.RenderCommand> update(MoveDirection dir);
+        /**
+         * Explode the ship after it's dead
+         * @return array of render commands
+         */
+        public abstract ArrayList<Renderer.RenderCommand> explode();
+        /**
+         * Shoot bullets
+         */
+        public abstract void shoot();
+        /**
+         * The ship gets hit by a bullet
+         */
+        public abstract void hit();
+        /**
+         * Is the ship still alive?
+         * @return true or false
+         */
+        public abstract boolean isAlive();
     }
     
+    /**
+     * Defines my ship
+     * @see GameObject.SpaceShip
+     */
     public static class MyShip extends SpaceShip
     {
         private int xMax, yMax;
@@ -117,7 +159,7 @@ public class GameObject
                     break;
                 case DIR_UP:
                     yPos -= 1;
-                    yPos = (yPos < yMax/3) ? yMax/3 : yPos;
+                    yPos = (yPos < yMax/3*2) ? yMax/3*2 : yPos;
                     break;
                 case DIR_LEFT:
                     xPos -= 1;
@@ -160,6 +202,10 @@ public class GameObject
         public boolean isAlive() {return this.d_HP > 0;}
     }
 
+    /**
+     * Defines enemy ship A
+     * @see GameObject.SpaceShip
+     */
     public static class EnemyA extends SpaceShip
     {
         private int xMax, yMax;
@@ -236,6 +282,10 @@ public class GameObject
         public boolean isAlive() {return this.d_HP > 0;}
     }
 
+    /**
+     * Defines enemy ship B
+     * @see GameObject.SpaceShip
+     */
     public static class EnemyB extends SpaceShip
     {
         private int xMax, yMax;
@@ -320,6 +370,10 @@ public class GameObject
         public boolean isAlive() {return this.d_HP > 0;}
     }
 
+    /**
+     * Defines enemy ship C
+     * @see GameObject.SpaceShip
+     */
     public static class EnemyC extends SpaceShip
     {
         private int xMax, yMax;
@@ -408,7 +462,9 @@ public class GameObject
         public boolean isAlive() {return this.d_HP > 0;}
     }
 
-    // this is the space background
+    /**
+     * The background manager
+     */
     public static class Background
     {
         private final String design = "|"; // defines the shape of each meteorite
@@ -430,7 +486,10 @@ public class GameObject
             }
         }
 
-        // update background and return new rendering commands
+        /**
+         * Update the background
+         * @return array of render commands
+         */
         public ArrayList<Renderer.RenderCommand> update()
         {
             ArrayList<Renderer.RenderCommand> commands = new ArrayList<>();
@@ -462,7 +521,11 @@ public class GameObject
             return commands;
         }
 
-        // randomly create a new line of rendering commands
+        /**
+         * Randomize a new line of meteorites for background
+         * @param y (which line)
+         * @return array of render commands
+         */
         private ArrayList<Renderer.RenderCommand> randomizeNewLine(int y)
         {
             ArrayList<Renderer.RenderCommand> newline = new ArrayList<>();
@@ -477,7 +540,9 @@ public class GameObject
         }
     }
 
-    // FPS controller for renderer
+    /**
+     * The fps controller object
+     */
     public static class FPSController
     {
         private long tPrev = 0;
@@ -491,7 +556,9 @@ public class GameObject
             tNow = System.currentTimeMillis();
         }
 
-        // pause the thread to limit fps
+        /**
+         * Update time, and pause the thread to limit fps
+         */
         public void update()
         {
             tNow = System.currentTimeMillis();

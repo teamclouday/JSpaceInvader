@@ -2,6 +2,9 @@
 
 import java.util.Scanner;
 
+/**
+ * The entry point of the game
+ */
 public class Game 
 {
     public static void main(String[] args)
@@ -23,6 +26,6 @@ public class Game
         myRenderer.loop();
         int score = myRenderer.close();
         System.out.println("Thanks for playing JSpaceInvader!");
-        System.out.println("Your score is: " + score);
+        System.out.println("Your final score is: " + score);
     }
 }

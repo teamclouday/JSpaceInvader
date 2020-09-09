@@ -1,5 +1,3 @@
-// This class controls launch window and rendering part
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.awt.*;
@@ -7,9 +5,14 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import javax.swing.JPanel;
-
 import javax.swing.JFrame;
 
+/**
+ * This is the class to manage rendering and game objects.
+ * Also handle keyboard events
+ * @see java.awt.event.KeyListener
+ * @see javax.swing.JFrame
+ */
 public class Renderer implements KeyListener
 {
     // variables related to the window
@@ -22,7 +25,7 @@ public class Renderer implements KeyListener
     private boolean gameExit = false;
     private int maxPosX, maxPosY;
     private final int fps = 60;
-    //                           UP     DOWN   LEFT   RIGHT  SHOOT (space)
+    //                           UP     DOWN   LEFT   RIGHT  SHOOT
     private boolean[] control = {false, false, false, false, false};
     private int score = 0;
 
@@ -62,7 +65,9 @@ public class Renderer implements KeyListener
         objEnemies.add(new GameObject.EnemyC(maxPosX/2, 1, maxPosX, maxPosY)); // for test
     }
 
-    // main loop for the game
+    /**
+     * The main game loop
+     */
     public void loop()
     {
         boolean frame = false; // use this variable to slow down drawing
@@ -75,7 +80,10 @@ public class Renderer implements KeyListener
         }
     }
 
-    // collect render commands
+    /**
+     * Collect render command and send to JPanel
+     * @param frame
+     */
     private void render(boolean frame)
     {
         ArrayList<RenderCommand> commands = new ArrayList<>();
@@ -97,6 +105,9 @@ public class Renderer implements KeyListener
         myPanel.addCommand(commands);
     }
 
+    /**
+     * Process internal game logic (body movements, bullet hit, random spawned enemies)
+     */
     private void processLogic()
     {
         ArrayList<RenderCommand> commands = new ArrayList<>();
@@ -109,14 +120,16 @@ public class Renderer implements KeyListener
         myPanel.addCommand(commands);
     }
 
-    // send close window event
+    /**
+     * Send close window event
+     * @return int, final score
+     */
     public int close()
     {
         myFrame.dispatchEvent(new WindowEvent(myFrame, WindowEvent.WINDOW_CLOSING));
         return score;
     }
 
-    // detect for keyboard inputs
     @Override
     public void keyPressed(KeyEvent e) 
     {
@@ -174,11 +187,13 @@ public class Renderer implements KeyListener
             default: break;
         }
     }
-    // this function won't be used
     @Override
     public void keyTyped(KeyEvent e) {}
 
-    // this object controls the actual drawing on JFrame
+    /**
+     * This class handles the real text rendering, by the render commands received.
+     * @see javax.swing.JPanel
+     */
     public class MyPanel extends JPanel
     {
         static final long serialVersionUID = 1234L;
@@ -215,23 +230,37 @@ public class Renderer implements KeyListener
             commands.clear();
         }
 
-        // add new command for drawing
+        /**
+         * Add a single command
+         * @param posX
+         * @param posY
+         * @param data
+         */
         public void addCommand(int posX, int posY, String data)
         {
             commands.add(new RenderCommand(posX, posY, data));
         }
+        /**
+         * Add a single command
+         * @param cmd
+         */
         public void addCommand(RenderCommand cmd)
         {
             commands.add(cmd);
         }
+        /**
+         * Add a list of commands
+         * @param cmds
+         */
         public void addCommand(ArrayList<RenderCommand> cmds)
         {
             commands.addAll(cmds);
         }
     }
 
-    // this object stores a single render command
-    // the command is sent to myPanel for rendering
+    /**
+     * This class stores a single render command
+     */
     public static class RenderCommand
     {
         private int posX;
