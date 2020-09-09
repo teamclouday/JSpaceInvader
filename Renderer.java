@@ -203,14 +203,16 @@ public class Renderer implements KeyListener
         private Font myFont = new Font(Font.MONOSPACED, Font.PLAIN, fontSize);
         public int chrHeight = 0;
         public int chrWidth = 0;
+        private int chrDescent = 0;
 
         public MyPanel()
         {
             commands = new ArrayList<>();
             // set font properties
             FontMetrics metrics = getFontMetrics(myFont);
-            chrHeight = metrics.getMaxAscent();
+            chrHeight = metrics.getHeight();
             chrWidth = metrics.charWidth(' ');
+            chrDescent = metrics.getMaxDescent();
         }
         
         @Override
@@ -221,7 +223,7 @@ public class Renderer implements KeyListener
             {
                 // fill background with black
                 g.setColor(Color.BLACK);
-                g.fillRect(command.getX()*chrWidth, command.getY()*chrHeight, command.getData().length()*chrWidth, chrHeight);
+                g.fillRect(command.getX()*chrWidth, command.getY()*chrHeight + chrDescent, command.getData().length()*chrWidth, chrHeight);
                 // draw actual data
                 g.setColor(Color.WHITE);
                 g.drawString(command.getData(), command.getX()*chrWidth, (command.getY()+1)*chrHeight);
