@@ -157,8 +157,11 @@ public class GameObject
             return new Renderer.RenderCommand(xPos, yPos, " ");
         }
 
+        /**
+         * Whether this bullet belongs to an enemy
+         * @return boolean
+         */
         public boolean isEnemy(){return isEnemy;}
-        public int getY(){return yPos;}
     }
 
     /**
