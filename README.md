@@ -46,6 +46,8 @@ javadoc -d documentation *.java
 3. Terminal  
    ![terminal screen](img/screenshot3.png)  
 
+Survive for 5 rounds and you'll see a boss fight!  
+
 ------
 
 ### Potential Improvements  
