@@ -25,6 +25,7 @@ public class Renderer implements KeyListener
     
     // game status and properties
     private boolean gameExit = false;
+    private boolean gameStart = false;
     private int maxPosX, maxPosY;
     private final int fps = 60;
     //                           UP     DOWN   LEFT   RIGHT  SHOOT
@@ -74,21 +75,27 @@ public class Renderer implements KeyListener
      */
     public void loop()
     {
+        // first render the start screen
+        while(!gameStart)
+        {
+            myPanel.addCommand(new RenderCommand(maxPosX / 2 - 12, maxPosY / 2, "Welcome to Space Invader!"));
+            myPanel.addCommand(new RenderCommand(maxPosX / 2 - 10, maxPosY / 2+1, "Press ENTER to start"));
+            myPanel.repaint();
+            objFPSController.pause();
+        }
+        myPanel.addCommand(new RenderCommand(maxPosX / 2 - 12, maxPosY / 2, "                         "));
+        myPanel.addCommand(new RenderCommand(maxPosX / 2 - 10, maxPosY / 2+1, "                    "));
+        myPanel.repaint();
         boolean frame = false; // use this variable to slow down drawing
         while(!gameExit)
         {
-            if(objMyShip == null)
-            {
-                // this means game over
-                objFPSController.finalPause();
-                break;
-            }
             objFPSController.update();
             render(frame);
             renderUI();
             frame = !frame;
             myPanel.repaint(); // refresh the frame to update content
         }
+        objFPSController.finalPause();
     }
 
     /**
@@ -359,7 +366,7 @@ public class Renderer implements KeyListener
         if(!objMyShip.isAlive())
         {
             commands.addAll(objMyShip.explode());
-            objMyShip = null;
+            gameExit = true;
         }
         myPanel.addCommand(commands);
     }
@@ -403,6 +410,9 @@ public class Renderer implements KeyListener
             case KeyEvent.VK_SPACE:
                 control[4] = true;
                 break;
+            case KeyEvent.VK_ENTER:
+                gameStart = true;
+                break;
             default: break;
         }
     }
@@ -411,6 +421,9 @@ public class Renderer implements KeyListener
     {
         switch(e.getKeyCode())
         {
+            case KeyEvent.VK_ESCAPE:
+                gameExit = false;
+                break;
             case KeyEvent.VK_UP:
             case KeyEvent.VK_W:
                 control[0] = false;
@@ -462,7 +475,7 @@ public class Renderer implements KeyListener
         }
         
         @Override
-        public void paint(Graphics g)
+        public void paintComponent(Graphics g)
         {
             g.setFont(myFont);
             for(RenderCommand command : commands)
@@ -476,6 +489,7 @@ public class Renderer implements KeyListener
             }
             // clear drawing commands
             commands.clear();
+            this.revalidate();
         }
 
         /**

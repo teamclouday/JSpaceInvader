@@ -25,7 +25,8 @@ public class Game
         Renderer myRenderer = new Renderer(level);
         myRenderer.loop();
         String summary = myRenderer.close();
-        System.out.println("Thanks for playing JSpaceInvader!");
+        System.out.println("\nThanks for playing JSpaceInvader!");
         System.out.println(summary);
+        System.out.println();
     }
 }

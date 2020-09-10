@@ -166,7 +166,7 @@ public class GameObject
         private final String[] designClean = {" ", "   ", "     "};
         private final int[] possibleHPs = {20, 10, 5, 1};
         // these 2 values define the shoot timeout
-        private final int shootTimeout = 300;
+        private final int shootTimeout = 100;
         private long shootTimer = 0;
 
         public MyShip(int level, int xPos, int yPos, int xMax, int yMax)
@@ -686,6 +686,7 @@ public class GameObject
         private long tNow = 0;
         private long spf = 0;
         private final long finalPauseTimeout = 1000;
+        private final long normalPauseTimeout = 10;
 
         public FPSController(int fps)
         {
@@ -708,12 +709,31 @@ public class GameObject
                     Thread.sleep(spf - delta);
                 }catch(InterruptedException e)
                 {
+                    System.out.println("Thread sleep interrupted");
                     Thread.currentThread().interrupt();
                 }
             }
             tPrev = System.currentTimeMillis();
         }
 
+        /**
+         * Normal pause
+         */
+        public void pause()
+        {
+            try
+            {
+                Thread.sleep(normalPauseTimeout);
+            }catch(InterruptedException e)
+            {
+                System.out.println("Thread sleep interrupted");
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        /**
+         * Final pause after game over
+         */
         public void finalPause()
         {
             try
@@ -721,6 +741,7 @@ public class GameObject
                 Thread.sleep(finalPauseTimeout);
             }catch(InterruptedException e)
             {
+                System.out.println("Thread sleep interrupted");
                 Thread.currentThread().interrupt();
             }
         }
