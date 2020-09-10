@@ -37,3 +37,18 @@ javadoc -d documentation *.java
 ```
 
 ------
+
+### Screenshots  
+1. Start screen  
+   ![start screen](img/screenshot1.png)  
+2. In-game play  
+   ![ingame screen](img/screenshot2.png)  
+3. Terminal  
+   ![terminal screen](img/screenshot3.png)  
+
+------
+
+### Potential Improvements  
+* Add inertia to enemies' movements, so that they move more fluently  
+* Enemy may learn to avoid the bullets  
+* Improve the shape and variety of enemies  
