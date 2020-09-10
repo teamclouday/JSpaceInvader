@@ -268,13 +268,15 @@ public class Renderer implements KeyListener
                 {
                     if(otherShip != ship)
                     {
-                        if(Math.abs(ship.xPos + desiredDir - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1))
+                        if(Math.abs(ship.xPos + desiredDir - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1) &&
+                           Math.abs(ship.yPos - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1))
                         {
                             // overlap detected
                             validDir = false;
                             break;
                         }
-                        if(Math.abs(ship.xPos - desiredDir - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1))
+                        if(Math.abs(ship.xPos - desiredDir - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1) &&
+                           Math.abs(ship.yPos - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1))
                             validOppositeDir = false; // not valid to move opposite way
                     }
                 }
@@ -298,13 +300,15 @@ public class Renderer implements KeyListener
                 {
                     if(otherShip != ship)
                     {
-                        if(Math.abs(ship.yPos + desiredDir - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1))
+                        if(Math.abs(ship.yPos + desiredDir - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1) &&
+                           Math.abs(ship.xPos - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1))
                         {
                             // overlap detected
                             validDir = false;
                             break;
                         }
-                        if(Math.abs(ship.yPos - desiredDir - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1))
+                        if(Math.abs(ship.yPos - desiredDir - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1) &&
+                           Math.abs(ship.xPos - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1))
                             validOppositeDir = false; // not valid to move opposite way
                     }
                 }
