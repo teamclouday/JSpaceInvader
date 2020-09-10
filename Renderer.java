@@ -257,68 +257,72 @@ public class Renderer implements KeyListener
             }
             int horiOrVert = enemyRand.nextInt(2);
             GameObject.MoveDirection finalChoice = GameObject.MoveDirection.DIR_NONE;
-            if(horiOrVert == 0)
+            // 50% possibility to stay still, to reduce unnatural movements
+            if(enemyRand.nextInt(2) > 0)
             {
-                // move horizontally
-                int desiredDir = (objMyShip.xPos >= ship.xPos) ? 1 : -1; // move towards my ship
-                // check validity
-                boolean validDir = true;
-                boolean validOppositeDir = true;
-                for(GameObject.SpaceShip otherShip : objEnemies)
+                if(horiOrVert == 0)
                 {
-                    if(otherShip != ship)
+                    // move horizontally
+                    int desiredDir = (objMyShip.xPos >= ship.xPos) ? 1 : -1; // move towards my ship
+                    // check validity
+                    boolean validDir = true;
+                    boolean validOppositeDir = true;
+                    for(GameObject.SpaceShip otherShip : objEnemies)
                     {
-                        if(Math.abs(ship.xPos + desiredDir - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1) &&
-                           Math.abs(ship.yPos - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1))
+                        if(otherShip != ship)
                         {
-                            // overlap detected
-                            validDir = false;
-                            break;
+                            if(Math.abs(ship.xPos + desiredDir - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1) &&
+                               Math.abs(ship.yPos - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1))
+                            {
+                                // overlap detected
+                                validDir = false;
+                                break;
+                            }
+                            if(Math.abs(ship.xPos - desiredDir - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1) &&
+                               Math.abs(ship.yPos - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1))
+                                validOppositeDir = false; // not valid to move opposite way
                         }
-                        if(Math.abs(ship.xPos - desiredDir - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1) &&
-                           Math.abs(ship.yPos - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1))
-                            validOppositeDir = false; // not valid to move opposite way
+                    }
+                    if(validDir)
+                        finalChoice = (desiredDir < 0) ? GameObject.MoveDirection.DIR_LEFT : GameObject.MoveDirection.DIR_RIGHT;
+                    else if(validOppositeDir)
+                    {
+                        // only 1/5 possibility to stay still
+                        if(enemyRand.nextInt(5) > 0)
+                            finalChoice = (desiredDir > 0) ? GameObject.MoveDirection.DIR_LEFT : GameObject.MoveDirection.DIR_RIGHT;
                     }
                 }
-                if(validDir)
-                    finalChoice = (desiredDir < 0) ? GameObject.MoveDirection.DIR_LEFT : GameObject.MoveDirection.DIR_RIGHT;
-                else if(validOppositeDir)
+                else
                 {
-                    // only 1/5 possibility to stay still
-                    if(enemyRand.nextInt(5) > 0)
-                        finalChoice = (desiredDir > 0) ? GameObject.MoveDirection.DIR_LEFT : GameObject.MoveDirection.DIR_RIGHT;
-                }
-            }
-            else
-            {
-                // move vertically
-                int desiredDir = (enemyRand.nextInt(2) > 0) ? 1 : -1; // 50% possibility
-                // check validity
-                boolean validDir = true;
-                boolean validOppositeDir = true;
-                for(GameObject.SpaceShip otherShip : objEnemies)
-                {
-                    if(otherShip != ship)
+                    // move vertically
+                    int desiredDir = (enemyRand.nextInt(2) > 0) ? 1 : -1; // 50% possibility
+                    // check validity
+                    boolean validDir = true;
+                    boolean validOppositeDir = true;
+                    for(GameObject.SpaceShip otherShip : objEnemies)
                     {
-                        if(Math.abs(ship.yPos + desiredDir - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1) &&
-                           Math.abs(ship.xPos - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1))
+                        if(otherShip != ship)
                         {
-                            // overlap detected
-                            validDir = false;
-                            break;
+                            if(Math.abs(ship.yPos + desiredDir - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1) &&
+                               Math.abs(ship.xPos - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1))
+                            {
+                                // overlap detected
+                                validDir = false;
+                                break;
+                            }
+                            if(Math.abs(ship.yPos - desiredDir - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1) &&
+                               Math.abs(ship.xPos - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1))
+                                validOppositeDir = false; // not valid to move opposite way
                         }
-                        if(Math.abs(ship.yPos - desiredDir - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1) &&
-                           Math.abs(ship.xPos - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1))
-                            validOppositeDir = false; // not valid to move opposite way
                     }
-                }
-                if(validDir)
-                    finalChoice = (desiredDir < 0) ? GameObject.MoveDirection.DIR_UP : GameObject.MoveDirection.DIR_DOWN;
-                else if(validOppositeDir)
-                {
-                    // only 1/5 possibility to stay unmoved
-                    if(enemyRand.nextInt(5) > 1)
-                        finalChoice = (desiredDir > 0) ? GameObject.MoveDirection.DIR_UP : GameObject.MoveDirection.DIR_DOWN;
+                    if(validDir)
+                        finalChoice = (desiredDir < 0) ? GameObject.MoveDirection.DIR_UP : GameObject.MoveDirection.DIR_DOWN;
+                    else if(validOppositeDir)
+                    {
+                        // only 1/5 possibility to stay unmoved
+                        if(enemyRand.nextInt(5) > 1)
+                            finalChoice = (desiredDir > 0) ? GameObject.MoveDirection.DIR_UP : GameObject.MoveDirection.DIR_DOWN;
+                    }
                 }
             }
             commands.addAll(ship.update(finalChoice));

@@ -166,7 +166,7 @@ public class GameObject
         private final String[] designClean = {" ", "   ", "     "};
         private final int[] possibleHPs = {20, 10, 5, 1};
         // these 2 values define the shoot timeout
-        private final int shootTimeout = 100;
+        private final int shootTimeout = 200;
         private long shootTimer = 0;
 
         public MyShip(int level, int xPos, int yPos, int xMax, int yMax)
@@ -279,7 +279,7 @@ public class GameObject
         private final String[] design = {"<v>"};
         private final String[] designClean = {"   "};
         // these 2 values define the shoot timeout
-        private final int shootTimeout = 1500;
+        private final int shootTimeout = 1200;
         private long shootTimer = 0;
 
         public EnemyA(int xPos, int yPos, int xMax, int yMax)
@@ -383,7 +383,7 @@ public class GameObject
         private final String[] design = {"[===]", "( )", "v"};
         private final String[] designClean = {"     ", "   ", " "};
         // these 2 values define the shoot timeout
-        private final int shootTimeout = 1200;
+        private final int shootTimeout = 900;
         private long shootTimer = 0;
 
         public EnemyB(int xPos, int yPos, int xMax, int yMax)
@@ -496,7 +496,7 @@ public class GameObject
         private final String[] design = {"<[-----]>", "#####", "%%%", "V"};
         private final String[] designClean = {"         ", "     ", "   ", " "};
         // these 2 values define the shoot timeout
-        private final int shootTimeout = 1000;
+        private final int shootTimeout = 600;
         private long shootTimer = 0;
 
         public EnemyC(int xPos, int yPos, int xMax, int yMax)
