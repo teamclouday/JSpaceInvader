@@ -1,5 +1,7 @@
+import java.util.Random;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.ListIterator;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -27,14 +29,18 @@ public class Renderer implements KeyListener
     private final int fps = 60;
     //                           UP     DOWN   LEFT   RIGHT  SHOOT
     private boolean[] control = {false, false, false, false, false};
-    private int score = 0;
-
+    private int score = 0; // how many enemies defeated
+    private int scoreRound = -1; // how many rounds survived (starting from -1)
+    
     // game objects
     GameObject.FPSController objFPSController;
     GameObject.Background objBackground;
     GameObject.MyShip objMyShip;
     LinkedList<GameObject.SpaceShip> objEnemies;
     LinkedList<GameObject.Bullet> objBullets;
+    private final int maxEnemiesSpawned = 5; // how many enemies can be spawned at most
+    private final int minEnemiesSpawned = 1; // how many enemies can be spawned at least
+    private Random enemyRand;
 
     public Renderer(int level)
     {
@@ -55,14 +61,12 @@ public class Renderer implements KeyListener
         myFrame.setBackground(Color.BLACK);
         myFrame.setAlwaysOnTop(true);
         // initialize game objects
+        enemyRand = new Random(System.currentTimeMillis());
         objFPSController = new GameObject.FPSController(fps);
         objBackground = new GameObject.Background(maxPosX, maxPosY);
         objMyShip = new GameObject.MyShip(level, maxPosX / 2, maxPosY - 1, maxPosX, maxPosY);
         objEnemies = new LinkedList<>();
         objBullets = new LinkedList<>();
-        objEnemies.add(new GameObject.EnemyA(maxPosX/2-10, 0, maxPosX, maxPosY)); // for test
-        objEnemies.add(new GameObject.EnemyB(maxPosX/2+10, 1, maxPosX, maxPosY)); // for test
-        objEnemies.add(new GameObject.EnemyC(maxPosX/2, 1, maxPosX, maxPosY)); // for test
     }
 
     /**
@@ -73,11 +77,31 @@ public class Renderer implements KeyListener
         boolean frame = false; // use this variable to slow down drawing
         while(!gameExit)
         {
+            if(objMyShip == null)
+            {
+                // this means game over
+                objFPSController.finalPause();
+                break;
+            }
             objFPSController.update();
             render(frame);
+            renderUI();
             frame = !frame;
             myPanel.repaint(); // refresh the frame to update content
         }
+    }
+
+    /**
+     * Create render commands to render UI
+     */
+    private void renderUI()
+    {
+        String myHP    = "HP    = " + objMyShip.d_HP;
+        String myScore = "Score = " + score;
+        String myRound = "Round = " + scoreRound;
+        myPanel.addCommand(new RenderCommand(1, 0, myHP));
+        myPanel.addCommand(new RenderCommand(1, 1, myScore));
+        myPanel.addCommand(new RenderCommand(1, 2, myRound));
     }
 
     /**
@@ -111,23 +135,245 @@ public class Renderer implements KeyListener
     private void processLogic()
     {
         ArrayList<RenderCommand> commands = new ArrayList<>();
+        // update my ship direction based on control input
         if(control[0]) commands.addAll(objMyShip.update(GameObject.MoveDirection.DIR_UP));
         else if(control[1]) commands.addAll(objMyShip.update(GameObject.MoveDirection.DIR_DOWN));
         else if(control[2]) commands.addAll(objMyShip.update(GameObject.MoveDirection.DIR_LEFT));
         else if(control[3]) commands.addAll(objMyShip.update(GameObject.MoveDirection.DIR_RIGHT));
         else commands.addAll(objMyShip.update(GameObject.MoveDirection.DIR_NONE));
-
+        if(control[4]) objBullets.addAll(objMyShip.shoot());
+        // process enemies
+        if(objEnemies.size() <= 0)
+        {
+            // randomly spawn enemies if num enemy is 0
+            scoreRound++;
+            int num = enemyRand.nextInt((maxEnemiesSpawned - minEnemiesSpawned) + 1) + minEnemiesSpawned;
+            for(int i = 0; i < num; i++)
+            {
+                int enemyType = enemyRand.nextInt(1000); // [0, 50) - Enemy C, [50, 400) - Enemy B, [400, 1000) - Enemy A
+                if(enemyType < 50)
+                {
+                    // set offsets of Ship C
+                    int offsetX = 4; int offsetY = 2;
+                    int maxTry = 10;
+                    while(maxTry > 0)
+                    {
+                        int posX = enemyRand.nextInt((maxPosX-8)+1) + 4; // [4, maxPosX - 4]
+                        int posY = enemyRand.nextInt((maxPosY/2-1)+1) + 1; // [1, maxPosY / 2]
+                        boolean goodPos = true;
+                        for(GameObject.SpaceShip ship : objEnemies)
+                        {
+                            if(Math.abs(ship.xPos - posX) < (ship.offsetX + offsetX + 1) && Math.abs(ship.yPos - posY) < (ship.offsetY + offsetY + 1))
+                            {
+                                // overlap detected
+                                goodPos = false;
+                                break;
+                            }
+                        }
+                        if(goodPos)
+                        {
+                            objEnemies.add(new GameObject.EnemyC(posX, posY, maxPosX, maxPosY));
+                            break;
+                        }
+                        maxTry--;
+                    }
+                }
+                else if(enemyType < 400)
+                {
+                    // set offsets of Ship B
+                    int offsetX = 2; int offsetY = 1;
+                    int maxTry = 10;
+                    while(maxTry > 0)
+                    {
+                        int posX = enemyRand.nextInt((maxPosX-8)+1) + 4; // [4, maxPosX - 4]
+                        int posY = enemyRand.nextInt((maxPosY/2-1)+1) + 1; // [1, maxPosY / 2]
+                        boolean goodPos = true;
+                        for(GameObject.SpaceShip ship : objEnemies)
+                        {
+                            if(Math.abs(ship.xPos - posX) < (ship.offsetX + offsetX + 1) && Math.abs(ship.yPos - posY) < (ship.offsetY + offsetY + 1))
+                            {
+                                // overlap detected
+                                goodPos = false;
+                                break;
+                            }
+                        }
+                        if(goodPos)
+                        {
+                            objEnemies.add(new GameObject.EnemyB(posX, posY, maxPosX, maxPosY));
+                            break;
+                        }
+                        maxTry--;
+                    }
+                }
+                else
+                {
+                    // set offsets of Ship A
+                    int offsetX = 1; int offsetY = 0;
+                    int maxTry = 10;
+                    while(maxTry > 0)
+                    {
+                        int posX = enemyRand.nextInt((maxPosX-8)+1) + 4; // [4, maxPosX - 4]
+                        int posY = enemyRand.nextInt((maxPosY/2-1)+1) + 1; // [1, maxPosY / 2]
+                        boolean goodPos = true;
+                        for(GameObject.SpaceShip ship : objEnemies)
+                        {
+                            if(Math.abs(ship.xPos - posX) < (ship.offsetX + offsetX + 1) && Math.abs(ship.yPos - posY) < (ship.offsetY + offsetY + 1))
+                            {
+                                // overlap detected
+                                goodPos = false;
+                                break;
+                            }
+                        }
+                        if(goodPos)
+                        {
+                            objEnemies.add(new GameObject.EnemyA(posX, posY, maxPosX, maxPosY));
+                            break;
+                        }
+                        maxTry--;
+                    }
+                }
+            }
+        }
+        ListIterator<GameObject.SpaceShip> enemyIter = objEnemies.listIterator();
+        while(enemyIter.hasNext())
+        {
+            // randomly move on Y axis
+            // move following my ship on X axis
+            GameObject.SpaceShip ship = enemyIter.next();
+            // check if alive
+            if(!ship.isAlive())
+            {
+                score++;
+                commands.addAll(ship.explode());
+                enemyIter.remove(); // remove dead ship
+                continue;
+            }
+            int horiOrVert = enemyRand.nextInt(2);
+            GameObject.MoveDirection finalChoice = GameObject.MoveDirection.DIR_NONE;
+            if(horiOrVert == 0)
+            {
+                // move horizontally
+                int desiredDir = (objMyShip.xPos >= ship.xPos) ? 1 : -1; // move towards my ship
+                // check validity
+                boolean validDir = true;
+                boolean validOppositeDir = true;
+                for(GameObject.SpaceShip otherShip : objEnemies)
+                {
+                    if(otherShip != ship)
+                    {
+                        if(Math.abs(ship.xPos + desiredDir - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1))
+                        {
+                            // overlap detected
+                            validDir = false;
+                            break;
+                        }
+                        if(Math.abs(ship.xPos - desiredDir - otherShip.xPos) < (otherShip.offsetX + ship.offsetX + 1))
+                            validOppositeDir = false; // not valid to move opposite way
+                    }
+                }
+                if(validDir)
+                    finalChoice = (desiredDir < 0) ? GameObject.MoveDirection.DIR_LEFT : GameObject.MoveDirection.DIR_RIGHT;
+                else if(validOppositeDir)
+                {
+                    // only 1/5 possibility to stay still
+                    if(enemyRand.nextInt(5) > 0)
+                        finalChoice = (desiredDir > 0) ? GameObject.MoveDirection.DIR_LEFT : GameObject.MoveDirection.DIR_RIGHT;
+                }
+            }
+            else
+            {
+                // move vertically
+                int desiredDir = (enemyRand.nextInt(2) > 0) ? 1 : -1; // 50% possibility
+                // check validity
+                boolean validDir = true;
+                boolean validOppositeDir = true;
+                for(GameObject.SpaceShip otherShip : objEnemies)
+                {
+                    if(otherShip != ship)
+                    {
+                        if(Math.abs(ship.yPos + desiredDir - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1))
+                        {
+                            // overlap detected
+                            validDir = false;
+                            break;
+                        }
+                        if(Math.abs(ship.yPos - desiredDir - otherShip.yPos) < (otherShip.offsetY + ship.offsetY + 1))
+                            validOppositeDir = false; // not valid to move opposite way
+                    }
+                }
+                if(validDir)
+                    finalChoice = (desiredDir < 0) ? GameObject.MoveDirection.DIR_UP : GameObject.MoveDirection.DIR_DOWN;
+                else if(validOppositeDir)
+                {
+                    // only 1/5 possibility to stay unmoved
+                    if(enemyRand.nextInt(5) > 1)
+                        finalChoice = (desiredDir > 0) ? GameObject.MoveDirection.DIR_UP : GameObject.MoveDirection.DIR_DOWN;
+                }
+            }
+            commands.addAll(ship.update(finalChoice));
+            // randomly trigger shoot
+            if(enemyRand.nextInt(10) > 2)
+                objBullets.addAll(ship.shoot());
+        }
+        // process bullets
+        ListIterator<GameObject.Bullet> bulletIter = objBullets.listIterator();
+        while(bulletIter.hasNext())
+        {
+            GameObject.Bullet bullet = bulletIter.next();
+            // check if bullet is outside of screen
+            if(bullet.yPos < 0 || bullet.yPos > maxPosY)
+            {
+                commands.add(bullet.explode());
+                bulletIter.remove();
+                continue;
+            }
+            // process by type
+            boolean hit = false;
+            if(bullet.isEnemy())
+            {
+                if(Math.abs(bullet.xPos - objMyShip.xPos) <= (objMyShip.offsetX) && Math.abs(bullet.yPos - objMyShip.yPos) <= (objMyShip.offsetY))
+                {
+                    commands.addAll(objMyShip.hit());
+                    hit = true;
+                }
+            }
+            else
+            {
+                for(GameObject.SpaceShip ship : objEnemies)
+                {
+                    if(Math.abs(bullet.xPos - ship.xPos) <= (ship.offsetX) && Math.abs(bullet.yPos - ship.yPos) <= (ship.offsetY))
+                    {
+                        commands.addAll(ship.hit());
+                        hit = true;
+                        break;
+                    }
+                }
+            }
+            if(hit)
+            {
+                commands.add(bullet.explode());
+                bulletIter.remove();
+            }
+        }
+        // if my ship is not alive, set it to null
+        if(!objMyShip.isAlive())
+        {
+            commands.addAll(objMyShip.explode());
+            objMyShip = null;
+        }
         myPanel.addCommand(commands);
     }
 
     /**
      * Send close window event
-     * @return int, final score
+     * @return String, final summary
      */
-    public int close()
+    public String close()
     {
         myFrame.dispatchEvent(new WindowEvent(myFrame, WindowEvent.WINDOW_CLOSING));
-        return score;
+        String summary = "Your final score = " + score;
+        summary += "\nYou have survived " + scoreRound + " rounds";
+        return summary;
     }
 
     @Override
@@ -225,7 +471,7 @@ public class Renderer implements KeyListener
                 g.setColor(Color.BLACK);
                 g.fillRect(command.getX()*chrWidth, command.getY()*chrHeight + chrDescent, command.getData().length()*chrWidth, chrHeight);
                 // draw actual data
-                g.setColor(Color.WHITE);
+                g.setColor(command.getColor());
                 g.drawString(command.getData(), command.getX()*chrWidth, (command.getY()+1)*chrHeight);
             }
             // clear drawing commands
@@ -268,6 +514,7 @@ public class Renderer implements KeyListener
         private int posX;
         private int posY;
         private String data;
+        private Color color = Color.WHITE;
         RenderCommand()
         {
             this.posX = 0;
@@ -280,9 +527,17 @@ public class Renderer implements KeyListener
             this.posY = posY;
             this.data = data;
         }
+        RenderCommand(int posX, int posY, String data, Color color)
+        {
+            this.posX = posX;
+            this.posY = posY;
+            this.data = data;
+            this.color = color;
+        }
         public int getX(){return posX;}
         public int getY(){return posY;}
         public String getData(){return data;}
+        public Color getColor(){return color;}
         public void setX(int m){this.posX = m;}
         public void setY(int m){this.posY = m;}
         public void setData(String data){this.data = data;}

@@ -3,6 +3,7 @@
 import java.util.Random;
 import java.util.LinkedList;
 import java.util.ArrayList;
+import java.awt.Color;
 
 /**
  * Stores all game objects as static classes
@@ -29,8 +30,10 @@ public class GameObject
     public static class Bullet
     {
         private final String design = "*";
-        private int xPos, yPos, yDelta;
+        public int xPos, yPos;
+        private int yDelta;
         private boolean isEnemy;
+        private Color color;
 
         public Bullet(int xPos, int yPos, MoveDirection dir, boolean isEnemy)
         {
@@ -50,6 +53,10 @@ public class GameObject
                     this.yDelta = 0;
                     break;
             }
+            if(isEnemy)
+                color = Color.RED;
+            else
+                color = Color.CYAN;
         }
 
         /**
@@ -64,11 +71,20 @@ public class GameObject
             {
                 commands.add(new Renderer.RenderCommand(xPos, yPos, " "));
                 yPos += yDelta;
-                commands.add(new Renderer.RenderCommand(xPos, yPos, design));
+                commands.add(new Renderer.RenderCommand(xPos, yPos, design, color));
             }
             else
-                commands.add(new Renderer.RenderCommand(xPos, yPos, design));
+                commands.add(new Renderer.RenderCommand(xPos, yPos, design, color));
             return commands;
+        }
+
+        /**
+         * Undraw the bullet after it explode (or hit)
+         * @return a render command
+         */
+        public Renderer.RenderCommand explode()
+        {
+            return new Renderer.RenderCommand(xPos, yPos, " ");
         }
 
         public boolean isEnemy(){return isEnemy;}
@@ -85,6 +101,19 @@ public class GameObject
          */
         public boolean isEnemy;
         /**
+         * Set the offset from center position of the ship
+         */
+        public final int offsetX;
+        public final int offsetY;
+        /**
+         * Set the center position of the ship
+         */
+        public int xPos, yPos;
+        /**
+         * Whether the ship gets hit just now
+         */
+        protected boolean getHitJustNow;
+        /**
          * Update the ship position based on direction
          * @param dir
          * @return array of render commands
@@ -97,17 +126,29 @@ public class GameObject
         public abstract ArrayList<Renderer.RenderCommand> explode();
         /**
          * Shoot bullets
+         * @return array of new bullets
          */
-        public abstract void shoot();
+        public abstract ArrayList<Bullet> shoot();
         /**
          * The ship gets hit by a bullet
+         * @return array of special render command
          */
-        public abstract void hit();
+        public abstract ArrayList<Renderer.RenderCommand> hit();
         /**
          * Is the ship still alive?
          * @return true or false
          */
         public abstract boolean isAlive();
+        /**
+         * Constructor of the abstract class
+         * @param offsetX
+         * @param offsetY
+         */
+        public SpaceShip(int offsetX, int offsetY)
+        {
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+        }
     }
     
     /**
@@ -117,27 +158,29 @@ public class GameObject
     public static class MyShip extends SpaceShip
     {
         private int xMax, yMax;
-        public int xPos, yPos;
-        private int d_HP;
+        public int d_HP;
         //  A
         // | |
         //<=-=>
         private final String[] design = {"A", "| |", "<=-=>"};
         private final String[] designClean = {" ", "   ", "     "};
-        private final int[] possibleHPs = {12, 6, 3};
-        // these 2 values define the size of my ship
-        public final int offsetX = 1; // max offset from center X
-        public final int offsetY = 2; // max offset from center Y
+        private final int[] possibleHPs = {20, 10, 5, 1};
+        // these 2 values define the shoot timeout
+        private final int shootTimeout = 300;
+        private long shootTimer = 0;
 
         public MyShip(int level, int xPos, int yPos, int xMax, int yMax)
         {
+            super(1, 2);
             this.isEnemy = false;
             this.xPos = xPos; this.yPos = yPos;
             this.xMax = xMax; this.yMax = yMax;
             // define HP by level
             level = (level > 0) ? level : 0;
-            level = (level < 3) ? level : 2;
+            level = (level < 4) ? level : 3;
             d_HP = possibleHPs[level];
+            shootTimer = System.currentTimeMillis();
+            getHitJustNow = false;
         }
 
         @Override
@@ -173,9 +216,15 @@ public class GameObject
                     break;
             }
             // draw new body
-            commands.add(new Renderer.RenderCommand(xPos, yPos-1, design[0]));
-            commands.add(new Renderer.RenderCommand(xPos-1, yPos, design[1]));
-            commands.add(new Renderer.RenderCommand(xPos-2, yPos+1, design[2]));
+            Color color = Color.WHITE;
+            if(dir == MoveDirection.DIR_NONE && getHitJustNow)
+            {
+                getHitJustNow = false;
+                color = Color.RED;
+            }
+            commands.add(new Renderer.RenderCommand(xPos, yPos-1, design[0], color));
+            commands.add(new Renderer.RenderCommand(xPos-1, yPos, design[1], color));
+            commands.add(new Renderer.RenderCommand(xPos-2, yPos+1, design[2], color));
             return commands;
         }
 
@@ -191,13 +240,29 @@ public class GameObject
         }
 
         @Override
-        public void shoot() 
+        public ArrayList<Bullet> shoot() 
         {
-            
+            ArrayList<Bullet> newBullets = new ArrayList<>();
+            if(System.currentTimeMillis() - shootTimer > shootTimeout)
+            {
+                // my ship can only shoot one bullet a time
+                newBullets.add(new Bullet(xPos, yPos - 2, MoveDirection.DIR_UP, false));
+                shootTimer = System.currentTimeMillis();
+            }
+            return newBullets;
         }
 
         @Override
-        public void hit() {this.d_HP--;}
+        public ArrayList<Renderer.RenderCommand> hit() 
+        {
+            this.d_HP--;
+            getHitJustNow = true;
+            ArrayList<Renderer.RenderCommand> commands = new ArrayList<>();
+            commands.add(new Renderer.RenderCommand(xPos, yPos-1, design[0], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-1, yPos, design[1], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-2, yPos+1, design[2], Color.RED));
+            return commands;
+        }
         @Override
         public boolean isAlive() {return this.d_HP > 0;}
     }
@@ -209,21 +274,23 @@ public class GameObject
     public static class EnemyA extends SpaceShip
     {
         private int xMax, yMax;
-        public int xPos, yPos;
         private int d_HP;
         //<v>
         private final String[] design = {"<v>"};
         private final String[] designClean = {"   "};
-        // these 2 values define the size of the ship
-        public final int offsetX = 1; // max offset from center X
-        public final int offsetY = 0; // max offset from center Y
+        // these 2 values define the shoot timeout
+        private final int shootTimeout = 1500;
+        private long shootTimer = 0;
 
         public EnemyA(int xPos, int yPos, int xMax, int yMax)
         {
+            super(1, 0);
             this.isEnemy = true;
             this.xPos = xPos; this.yPos = yPos;
             this.xMax = xMax; this.yMax = yMax;
             d_HP = 2;
+            shootTimer = System.currentTimeMillis();
+            getHitJustNow = false;
         }
 
         @Override
@@ -257,7 +324,13 @@ public class GameObject
                     break;
             }
             // draw new body
-            commands.add(new Renderer.RenderCommand(xPos-1, yPos, design[0]));
+            Color color = Color.WHITE;
+            if(dir == MoveDirection.DIR_NONE && getHitJustNow)
+            {
+                getHitJustNow = false;
+                color = Color.RED;
+            }
+            commands.add(new Renderer.RenderCommand(xPos-1, yPos, design[0], color));
             return commands;
         }
 
@@ -271,13 +344,27 @@ public class GameObject
         }
 
         @Override
-        public void shoot() 
+        public ArrayList<Bullet> shoot() 
         {
-            
+            ArrayList<Bullet> newBullets = new ArrayList<>();
+            if(System.currentTimeMillis() - shootTimer > shootTimeout)
+            {
+                // enemy A can only shoot one bullet a time
+                newBullets.add(new Bullet(xPos, yPos + 1, MoveDirection.DIR_DOWN, true));
+                shootTimer = System.currentTimeMillis();
+            }
+            return newBullets;
         }
 
         @Override
-        public void hit() {this.d_HP--;}
+        public ArrayList<Renderer.RenderCommand> hit() 
+        {
+            this.d_HP--;
+            getHitJustNow = true;
+            ArrayList<Renderer.RenderCommand> commands = new ArrayList<>();
+            commands.add(new Renderer.RenderCommand(xPos-1, yPos, design[0], Color.RED));
+            return commands;
+        }
         @Override
         public boolean isAlive() {return this.d_HP > 0;}
     }
@@ -289,23 +376,25 @@ public class GameObject
     public static class EnemyB extends SpaceShip
     {
         private int xMax, yMax;
-        public int xPos, yPos;
         private int d_HP;
         //[===]
         // ( )
         //  v
         private final String[] design = {"[===]", "( )", "v"};
         private final String[] designClean = {"     ", "   ", " "};
-        // these 2 values define the size of the ship
-        public final int offsetX = 2; // max offset from center X
-        public final int offsetY = 1; // max offset from center Y
+        // these 2 values define the shoot timeout
+        private final int shootTimeout = 1200;
+        private long shootTimer = 0;
 
         public EnemyB(int xPos, int yPos, int xMax, int yMax)
         {
+            super(2, 1);
             this.isEnemy = true;
             this.xPos = xPos; this.yPos = yPos;
             this.xMax = xMax; this.yMax = yMax;
             d_HP = 4;
+            shootTimer = System.currentTimeMillis();
+            getHitJustNow = false;
         }
 
         @Override
@@ -341,9 +430,15 @@ public class GameObject
                     break;
             }
             // draw new body
-            commands.add(new Renderer.RenderCommand(xPos-2, yPos-1, design[0]));
-            commands.add(new Renderer.RenderCommand(xPos-1, yPos, design[1]));
-            commands.add(new Renderer.RenderCommand(xPos, yPos+1, design[2]));
+            Color color = Color.WHITE;
+            if(dir == MoveDirection.DIR_NONE && getHitJustNow)
+            {
+                getHitJustNow = false;
+                color = Color.RED;
+            }
+            commands.add(new Renderer.RenderCommand(xPos-2, yPos-1, design[0], color));
+            commands.add(new Renderer.RenderCommand(xPos-1, yPos, design[1], color));
+            commands.add(new Renderer.RenderCommand(xPos, yPos+1, design[2], color));
             return commands;
         }
 
@@ -359,13 +454,29 @@ public class GameObject
         }
 
         @Override
-        public void shoot() 
+        public ArrayList<Bullet> shoot() 
         {
-            
+            ArrayList<Bullet> newBullets = new ArrayList<>();
+            if(System.currentTimeMillis() - shootTimer > shootTimeout)
+            {
+                // enemy B can only shoot one bullet a time
+                newBullets.add(new Bullet(xPos, yPos + 2, MoveDirection.DIR_DOWN, true));
+                shootTimer = System.currentTimeMillis();
+            }
+            return newBullets;
         }
 
         @Override
-        public void hit() {this.d_HP--;}
+        public ArrayList<Renderer.RenderCommand> hit() 
+        {
+            this.d_HP--;
+            getHitJustNow = true;
+            ArrayList<Renderer.RenderCommand> commands = new ArrayList<>();
+            commands.add(new Renderer.RenderCommand(xPos-2, yPos-1, design[0], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-1, yPos, design[1], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos, yPos+1, design[2], Color.RED));
+            return commands;
+        }
         @Override
         public boolean isAlive() {return this.d_HP > 0;}
     }
@@ -377,7 +488,6 @@ public class GameObject
     public static class EnemyC extends SpaceShip
     {
         private int xMax, yMax;
-        public int xPos, yPos;
         private int d_HP;
         //<[-----]>
         //  #####
@@ -385,16 +495,19 @@ public class GameObject
         //    V
         private final String[] design = {"<[-----]>", "#####", "%%%", "V"};
         private final String[] designClean = {"         ", "     ", "   ", " "};
-        // these 2 values define the size of the ship
-        public final int offsetX = 4; // max offset from center X
-        public final int offsetY = 2; // max offset from center Y
+        // these 2 values define the shoot timeout
+        private final int shootTimeout = 1000;
+        private long shootTimer = 0;
 
         public EnemyC(int xPos, int yPos, int xMax, int yMax)
         {
+            super(4, 2);
             this.isEnemy = true;
             this.xPos = xPos; this.yPos = yPos;
             this.xMax = xMax; this.yMax = yMax;
             d_HP = 10;
+            shootTimer = System.currentTimeMillis();
+            getHitJustNow = false;
         }
 
         @Override
@@ -431,10 +544,16 @@ public class GameObject
                     break;
             }
             // draw new body
-            commands.add(new Renderer.RenderCommand(xPos-4, yPos-1, design[0]));
-            commands.add(new Renderer.RenderCommand(xPos-2, yPos, design[1]));
-            commands.add(new Renderer.RenderCommand(xPos-1, yPos+1, design[2]));
-            commands.add(new Renderer.RenderCommand(xPos, yPos+2, design[3]));
+            Color color = Color.WHITE;
+            if(dir == MoveDirection.DIR_NONE && getHitJustNow)
+            {
+                getHitJustNow = false;
+                color = Color.RED;
+            }
+            commands.add(new Renderer.RenderCommand(xPos-4, yPos-1, design[0], color));
+            commands.add(new Renderer.RenderCommand(xPos-2, yPos, design[1], color));
+            commands.add(new Renderer.RenderCommand(xPos-1, yPos+1, design[2], color));
+            commands.add(new Renderer.RenderCommand(xPos, yPos+2, design[3], color));
             return commands;
         }
 
@@ -451,13 +570,31 @@ public class GameObject
         }
 
         @Override
-        public void shoot() 
+        public ArrayList<Bullet> shoot() 
         {
-            
+            ArrayList<Bullet> newBullets = new ArrayList<>();
+            if(System.currentTimeMillis() - shootTimer > shootTimeout)
+            {
+                // enemy C can shoot two bullets a time
+                newBullets.add(new Bullet(xPos-2, yPos + 1, MoveDirection.DIR_DOWN, true));
+                newBullets.add(new Bullet(xPos+2, yPos + 1, MoveDirection.DIR_DOWN, true));
+                shootTimer = System.currentTimeMillis();
+            }
+            return newBullets;
         }
 
         @Override
-        public void hit() {this.d_HP--;}
+        public ArrayList<Renderer.RenderCommand> hit() 
+        {
+            this.d_HP--;
+            getHitJustNow = true;
+            ArrayList<Renderer.RenderCommand> commands = new ArrayList<>();
+            commands.add(new Renderer.RenderCommand(xPos-4, yPos-1, design[0], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-2, yPos, design[1], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-1, yPos+1, design[2], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos, yPos+2, design[3], Color.RED));
+            return commands;
+        }
         @Override
         public boolean isAlive() {return this.d_HP > 0;}
     }
@@ -468,7 +605,7 @@ public class GameObject
     public static class Background
     {
         private final String design = "|"; // defines the shape of each meteorite
-        private final int sparsity = 10; // in range (0, 1000), only defines horizontal sparsity
+        private final int sparsity = 5; // in range (0, 1000), only defines horizontal sparsity
         private LinkedList<ArrayList<Renderer.RenderCommand>> data;
         private int xMax, yMax;
         private Random myRand;
@@ -548,6 +685,7 @@ public class GameObject
         private long tPrev = 0;
         private long tNow = 0;
         private long spf = 0;
+        private final long finalPauseTimeout = 1000;
 
         public FPSController(int fps)
         {
@@ -574,6 +712,17 @@ public class GameObject
                 }
             }
             tPrev = System.currentTimeMillis();
+        }
+
+        public void finalPause()
+        {
+            try
+            {
+                Thread.sleep(finalPauseTimeout);
+            }catch(InterruptedException e)
+            {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 }
