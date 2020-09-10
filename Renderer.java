@@ -34,12 +34,12 @@ public class Renderer implements KeyListener
     private int scoreRound = 0; // how many rounds survived
     
     // game objects
-    GameObject.FPSController objFPSController;
-    GameObject.Background objBackground;
-    GameObject.MyShip objMyShip;
-    GameObject.RecoveryPack objRecovery;
-    LinkedList<GameObject.SpaceShip> objEnemies;
-    LinkedList<GameObject.Bullet> objBullets;
+    private GameObject.FPSController objFPSController;
+    private GameObject.Background objBackground;
+    private GameObject.MyShip objMyShip;
+    private GameObject.RecoveryPack objRecovery;
+    private LinkedList<GameObject.SpaceShip> objEnemies;
+    private LinkedList<GameObject.Bullet> objBullets;
     private final int maxEnemiesSpawned = 5; // how many enemies can be spawned at most
     private final int minEnemiesSpawned = 1; // how many enemies can be spawned at least
     private Random enemyRand;
