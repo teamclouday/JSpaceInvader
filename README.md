@@ -52,3 +52,10 @@ javadoc -d documentation *.java
 * Add inertia to enemies' movements, so that they move more fluently  
 * Enemy may learn to avoid the bullets  
 * Improve the shape and variety of enemies  
+
+------
+
+### Notes  
+* It's never a good idea to render on a GUI-purpose interface (not optimized for speed)  
+* Also not a good idea to treat it as a terminal (I render the screen using text). I'm just too lazy to learn to use internal drawing components in `java.awt` and design new enemies.
+* I knew that there are many more professional options (such as LWJGL) for game rendering, but I don't want to add additional dependencies to this project (supposed to be light-weight).
