@@ -604,7 +604,7 @@ public class GameObject
      */
     public static class Background
     {
-        private final String design = "|"; // defines the shape of each meteorite
+        private final String design = "'"; // defines the shape of each meteorite
         private final int sparsity = 5; // in range (0, 1000), only defines horizontal sparsity
         private LinkedList<ArrayList<Renderer.RenderCommand>> data;
         private int xMax, yMax;
