@@ -409,7 +409,7 @@ public class Renderer implements KeyListener
     {
         myFrame.dispatchEvent(new WindowEvent(myFrame, WindowEvent.WINDOW_CLOSING));
         String summary = "Your final score = " + score;
-        summary += "\nYou have survived " + scoreRound + " rounds";
+        summary += "\nYou have fought for " + scoreRound + " rounds";
         return summary;
     }
 
