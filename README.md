@@ -19,7 +19,7 @@ javac *.java
 java Game
 ```
 
-Select a level and start playing  
+Select a level, hit `ENTER` in window and start playing  
 
 ### Easy Control  
 
