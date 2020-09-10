@@ -37,6 +37,7 @@ public class Renderer implements KeyListener
     GameObject.FPSController objFPSController;
     GameObject.Background objBackground;
     GameObject.MyShip objMyShip;
+    GameObject.RecoveryPack objRecovery;
     LinkedList<GameObject.SpaceShip> objEnemies;
     LinkedList<GameObject.Bullet> objBullets;
     private final int maxEnemiesSpawned = 5; // how many enemies can be spawned at most
@@ -66,6 +67,7 @@ public class Renderer implements KeyListener
         objFPSController = new GameObject.FPSController(fps);
         objBackground = new GameObject.Background(maxPosX, maxPosY);
         objMyShip = new GameObject.MyShip(level, maxPosX / 2, maxPosY - 1, maxPosX, maxPosY);
+        objRecovery = new GameObject.RecoveryPack(maxPosX, maxPosY);
         objEnemies = new LinkedList<>();
         objBullets = new LinkedList<>();
     }
@@ -120,19 +122,16 @@ public class Renderer implements KeyListener
         ArrayList<RenderCommand> commands = new ArrayList<>();
         commands.addAll(objBackground.update());
         if(frame)
-        {
             processLogic();
-            for(GameObject.Bullet bullet : objBullets)
-                commands.addAll(bullet.update(frame));
-        }
         else
         {
             commands.addAll(objMyShip.update(GameObject.MoveDirection.DIR_NONE));
             for(GameObject.SpaceShip ship : objEnemies)
                 commands.addAll(ship.update(GameObject.MoveDirection.DIR_NONE));
-            for(GameObject.Bullet bullet : objBullets)
-                commands.addAll(bullet.update(frame));
         }
+        for(GameObject.Bullet bullet : objBullets)
+            commands.addAll(bullet.update(frame));
+        commands.addAll(objRecovery.update(frame));
         myPanel.addCommand(commands);
     }
 
@@ -149,6 +148,21 @@ public class Renderer implements KeyListener
         else if(control[3]) commands.addAll(objMyShip.update(GameObject.MoveDirection.DIR_RIGHT));
         else commands.addAll(objMyShip.update(GameObject.MoveDirection.DIR_NONE));
         if(control[4]) objBullets.addAll(objMyShip.shoot());
+        // process recovery pack
+        if(!objRecovery.exist())
+        {
+            if(enemyRand.nextInt(100) < 1) // 1/100 possibility to appear
+                commands.add(objRecovery.appear());
+        }
+        else
+        {
+            if(Math.abs((int)Math.floor(objRecovery.xPos) + 2 - objMyShip.xPos) < (objMyShip.offsetX + 3) &&
+               Math.abs((int)Math.floor(objRecovery.yPos) - objMyShip.yPos) < (objMyShip.offsetY + 1))
+            {
+                objMyShip.recover();
+                commands.add(objRecovery.disappear());
+            }
+        }
         // process enemies
         if(objEnemies.size() <= 0)
         {

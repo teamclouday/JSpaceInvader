@@ -35,3 +35,6 @@ Spaceship (Enemies, randomly shoot, randomly spawned, move randomly, bullets cau
 
 Bullet (Cause HP - 1):
 *
+
+Recovery Pack (Cause HP to full, only effective to my ship, randomly spawned)
+[HP+]

@@ -25,6 +25,76 @@ public class GameObject
     }
 
     /**
+     * The recovery pack object
+     */
+    public static class RecoveryPack
+    {
+        private final String design = "[HP+]";
+        public double xPos, yPos;
+        private boolean existing = false;
+        private int xMax, yMax;
+        private Random rand;
+
+        public RecoveryPack(int xMax, int yMax)
+        {
+            xPos = 0;
+            yPos = 0;
+            this.xMax = xMax;
+            this.yMax = yMax;
+            rand = new Random(System.currentTimeMillis());
+        }
+        /**
+         * Whether this pack is on screen
+         * @return boolean
+         */
+        public boolean exist(){return existing;}
+        /**
+         * Randomly appear on screen
+         * @return a render command
+         */
+        public Renderer.RenderCommand appear()
+        {
+            xPos = (double)rand.nextInt(xMax - 5);
+            yPos = 0;
+            existing = true;
+            return new Renderer.RenderCommand((int)Math.floor(xPos), (int)Math.floor(yPos), design, Color.GREEN);
+        }
+        /**
+         * Disappear from screen
+         * @return a render command
+         */
+        public Renderer.RenderCommand disappear()
+        {
+            existing = false;
+            return new Renderer.RenderCommand((int)Math.floor(xPos), (int)Math.floor(yPos), "     ");
+        }
+        /**
+         * Update the position based on current frame
+         * @param frame
+         * @return array of render commands
+         */
+        public ArrayList<Renderer.RenderCommand> update(boolean frame)
+        {
+            ArrayList<Renderer.RenderCommand> commands = new ArrayList<>();
+            if(existing)
+            {
+                if(frame)
+                {
+                    commands.add(new Renderer.RenderCommand((int)Math.floor(xPos), (int)Math.floor(yPos), "     "));
+                    yPos+=0.5;
+                }
+                if(yPos > yMax)
+                    existing = false;
+                else
+                {
+                    commands.add(new Renderer.RenderCommand((int)Math.floor(xPos), (int)Math.floor(yPos), design, Color.GREEN));
+                }
+            }
+            return commands;
+        }
+    }
+
+    /**
      * The bullet class
      */
     public static class Bullet
@@ -54,7 +124,7 @@ public class GameObject
                     break;
             }
             if(isEnemy)
-                color = Color.RED;
+                color = Color.YELLOW;
             else
                 color = Color.CYAN;
         }
@@ -159,14 +229,13 @@ public class GameObject
     {
         private int xMax, yMax;
         public int d_HP;
-        //  A
-        // | |
-        //<=-=>
+
         private final String[] design = {"A", "| |", "<=-=>"};
         private final String[] designClean = {" ", "   ", "     "};
         private final int[] possibleHPs = {30, 15, 8, 1};
+        private int level;
         // these 2 values define the shoot timeout
-        private final int shootTimeout = 200;
+        private final int shootTimeout = 150;
         private long shootTimer = 0;
 
         public MyShip(int level, int xPos, int yPos, int xMax, int yMax)
@@ -179,9 +248,15 @@ public class GameObject
             level = (level > 0) ? level : 0;
             level = (level < 4) ? level : 3;
             d_HP = possibleHPs[level];
+            this.level = level;
             shootTimer = System.currentTimeMillis();
             getHitJustNow = false;
         }
+
+        /**
+         * Recover to full HP
+         */
+        public void recover(){d_HP = possibleHPs[level];}
 
         @Override
         public ArrayList<Renderer.RenderCommand> update(GameObject.MoveDirection dir) 
@@ -275,7 +350,7 @@ public class GameObject
     {
         private int xMax, yMax;
         private int d_HP;
-        //<v>
+
         private final String[] design = {"<v>"};
         private final String[] designClean = {"   "};
         // these 2 values define the shoot timeout
@@ -377,9 +452,7 @@ public class GameObject
     {
         private int xMax, yMax;
         private int d_HP;
-        //[===]
-        // ( )
-        //  v
+
         private final String[] design = {"[===]", "( )", "v"};
         private final String[] designClean = {"     ", "   ", " "};
         // these 2 values define the shoot timeout
@@ -489,10 +562,7 @@ public class GameObject
     {
         private int xMax, yMax;
         private int d_HP;
-        //<[-----]>
-        //  #####
-        //   %%%
-        //    V
+
         private final String[] design = {"<[-----]>", "#####", "%%%", "V"};
         private final String[] designClean = {"         ", "     ", "   ", " "};
         // these 2 values define the shoot timeout
