@@ -164,7 +164,7 @@ public class GameObject
         //<=-=>
         private final String[] design = {"A", "| |", "<=-=>"};
         private final String[] designClean = {" ", "   ", "     "};
-        private final int[] possibleHPs = {20, 10, 5, 1};
+        private final int[] possibleHPs = {30, 15, 8, 1};
         // these 2 values define the shoot timeout
         private final int shootTimeout = 200;
         private long shootTimer = 0;
@@ -288,7 +288,7 @@ public class GameObject
             this.isEnemy = true;
             this.xPos = xPos; this.yPos = yPos;
             this.xMax = xMax; this.yMax = yMax;
-            d_HP = 2;
+            d_HP = 8;
             shootTimer = System.currentTimeMillis();
             getHitJustNow = false;
         }
@@ -392,7 +392,7 @@ public class GameObject
             this.isEnemy = true;
             this.xPos = xPos; this.yPos = yPos;
             this.xMax = xMax; this.yMax = yMax;
-            d_HP = 4;
+            d_HP = 15;
             shootTimer = System.currentTimeMillis();
             getHitJustNow = false;
         }
@@ -505,7 +505,7 @@ public class GameObject
             this.isEnemy = true;
             this.xPos = xPos; this.yPos = yPos;
             this.xMax = xMax; this.yMax = yMax;
-            d_HP = 10;
+            d_HP = 30;
             shootTimer = System.currentTimeMillis();
             getHitJustNow = false;
         }
@@ -593,6 +593,179 @@ public class GameObject
             commands.add(new Renderer.RenderCommand(xPos-2, yPos, design[1], Color.RED));
             commands.add(new Renderer.RenderCommand(xPos-1, yPos+1, design[2], Color.RED));
             commands.add(new Renderer.RenderCommand(xPos, yPos+2, design[3], Color.RED));
+            return commands;
+        }
+        @Override
+        public boolean isAlive() {return this.d_HP > 0;}
+    }
+
+    /**
+     * Defines enemy ship D (hidden boss)
+     * @see GameObject.SpaceShip
+     */
+    public static class EnemyD extends SpaceShip
+    {
+        private int xMax, yMax;
+        private int d_HP;
+        private final String[] design = {
+            "<[-----------------------]>",
+            "[#####################]",
+            "-[---------------------]-",
+            "(0000000000000000000)",
+            "(1111111111111111111)",
+            "*******************",
+            "@@@@@@@@@@@@@@@@@@@@@",
+            "WWWWWWWWWWWWWWW",
+            "VVV  | |  VVV",
+            "V    W    V"};
+        private final String[] designClean = {
+            "                           ",
+            "                       ",
+            "                         ",
+            "                     ",
+            "                     ",
+            "                   ",
+            "                     ",
+            "               ",
+            "             ",
+            "           "};
+        // these 2 values define the shoot timeout
+        private final int shootTimeout = 250;
+        private long shootTimer = 0;
+
+        private boolean bulletType = true; // indicate to switch bullet type
+
+        public EnemyD(int xPos, int yPos, int xMax, int yMax)
+        {
+            super(13, 5);
+            this.isEnemy = true;
+            this.xPos = xPos; this.yPos = yPos;
+            this.xMax = xMax; this.yMax = yMax;
+            d_HP = 50;
+            shootTimer = System.currentTimeMillis();
+            getHitJustNow = false;
+        }
+
+        @Override
+        public ArrayList<Renderer.RenderCommand> update(GameObject.MoveDirection dir) 
+        {
+            ArrayList<Renderer.RenderCommand> commands = new ArrayList<>();
+            if(dir != MoveDirection.DIR_NONE)
+            {
+                // clear previous draw
+                commands.add(new Renderer.RenderCommand(xPos-13, yPos-4, designClean[0]));
+                commands.add(new Renderer.RenderCommand(xPos-11, yPos-3, designClean[1]));
+                commands.add(new Renderer.RenderCommand(xPos-12, yPos-2, designClean[2]));
+                commands.add(new Renderer.RenderCommand(xPos-10, yPos-1, designClean[3]));
+                commands.add(new Renderer.RenderCommand(xPos-10, yPos, designClean[4]));
+                commands.add(new Renderer.RenderCommand(xPos-9, yPos+1, designClean[5]));
+                commands.add(new Renderer.RenderCommand(xPos-10, yPos+2, designClean[6]));
+                commands.add(new Renderer.RenderCommand(xPos-7, yPos+3, designClean[7]));
+                commands.add(new Renderer.RenderCommand(xPos-6, yPos+4, designClean[8]));
+                commands.add(new Renderer.RenderCommand(xPos-5, yPos+5, designClean[9]));
+            }
+            switch(dir)
+            {
+                case DIR_DOWN:
+                    yPos += 1;
+                    yPos = (yPos > yMax/2-5) ? yMax/2-5 : yPos;
+                    break;
+                case DIR_UP:
+                    yPos -= 1;
+                    yPos = (yPos < 4) ? 4 : yPos;
+                    break;
+                case DIR_LEFT:
+                    xPos -= 1;
+                    xPos = (xPos < 13) ? 13 : xPos;
+                    break;
+                case DIR_RIGHT:
+                    xPos += 1;
+                    xPos = (xPos > xMax-13) ? xMax-13 : xPos;
+                    break;
+                default:
+                    break;
+            }
+            // draw new body
+            Color color = Color.WHITE;
+            if(dir == MoveDirection.DIR_NONE && getHitJustNow)
+            {
+                getHitJustNow = false;
+                color = Color.RED;
+            }
+            commands.add(new Renderer.RenderCommand(xPos-13, yPos-4, design[0], color));
+            commands.add(new Renderer.RenderCommand(xPos-11, yPos-3, design[1], color));
+            commands.add(new Renderer.RenderCommand(xPos-12, yPos-2, design[2], color));
+            commands.add(new Renderer.RenderCommand(xPos-10, yPos-1, design[3], color));
+            commands.add(new Renderer.RenderCommand(xPos-10, yPos, design[4], color));
+            commands.add(new Renderer.RenderCommand(xPos-9, yPos+1, design[5], color));
+            commands.add(new Renderer.RenderCommand(xPos-10, yPos+2, design[6], color));
+            commands.add(new Renderer.RenderCommand(xPos-7, yPos+3, design[7], color));
+            commands.add(new Renderer.RenderCommand(xPos-6, yPos+4, design[8], color));
+            commands.add(new Renderer.RenderCommand(xPos-5, yPos+5, design[9], color));
+            return commands;
+        }
+
+        @Override
+        public ArrayList<Renderer.RenderCommand> explode() 
+        {
+            ArrayList<Renderer.RenderCommand> commands = new ArrayList<>();
+            // clear previous draw
+            commands.add(new Renderer.RenderCommand(xPos-13, yPos-4, designClean[0]));
+            commands.add(new Renderer.RenderCommand(xPos-11, yPos-3, designClean[1]));
+            commands.add(new Renderer.RenderCommand(xPos-12, yPos-2, designClean[2]));
+            commands.add(new Renderer.RenderCommand(xPos-10, yPos-1, designClean[3]));
+            commands.add(new Renderer.RenderCommand(xPos-10, yPos, designClean[4]));
+            commands.add(new Renderer.RenderCommand(xPos-9, yPos+1, designClean[5]));
+            commands.add(new Renderer.RenderCommand(xPos-10, yPos+2, designClean[6]));
+            commands.add(new Renderer.RenderCommand(xPos-7, yPos+3, designClean[7]));
+            commands.add(new Renderer.RenderCommand(xPos-6, yPos+4, designClean[8]));
+            commands.add(new Renderer.RenderCommand(xPos-5, yPos+5, designClean[9]));
+            return commands;
+        }
+
+        @Override
+        public ArrayList<Bullet> shoot() 
+        {
+            ArrayList<Bullet> newBullets = new ArrayList<>();
+            if(System.currentTimeMillis() - shootTimer > shootTimeout)
+            {
+                if(bulletType)
+                {
+                    // enemy D shoot three bullets a time
+                    newBullets.add(new Bullet(xPos-5, yPos+6, MoveDirection.DIR_DOWN, true));
+                    newBullets.add(new Bullet(xPos+5, yPos+6, MoveDirection.DIR_DOWN, true));
+                    newBullets.add(new Bullet(xPos, yPos+6, MoveDirection.DIR_DOWN, true));
+                }
+                else
+                {
+                    // enemy D shoot four bullets a time
+                    newBullets.add(new Bullet(xPos-10, yPos+3, MoveDirection.DIR_DOWN, true));
+                    newBullets.add(new Bullet(xPos+10, yPos+3, MoveDirection.DIR_DOWN, true));
+                    newBullets.add(new Bullet(xPos-12, yPos-1, MoveDirection.DIR_DOWN, true));
+                    newBullets.add(new Bullet(xPos+12, yPos-1, MoveDirection.DIR_DOWN, true));
+                }
+                bulletType = !bulletType;
+                shootTimer = System.currentTimeMillis();
+            }
+            return newBullets;
+        }
+
+        @Override
+        public ArrayList<Renderer.RenderCommand> hit() 
+        {
+            this.d_HP--;
+            getHitJustNow = true;
+            ArrayList<Renderer.RenderCommand> commands = new ArrayList<>();
+            commands.add(new Renderer.RenderCommand(xPos-13, yPos-4, design[0], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-11, yPos-3, design[1], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-12, yPos-2, design[2], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-10, yPos-1, design[3], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-10, yPos, design[4], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-9, yPos+1, design[5], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-10, yPos+2, design[6], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-7, yPos+3, design[7], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-6, yPos+4, design[8], Color.RED));
+            commands.add(new Renderer.RenderCommand(xPos-5, yPos+5, design[9], Color.RED));
             return commands;
         }
         @Override

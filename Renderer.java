@@ -31,7 +31,7 @@ public class Renderer implements KeyListener
     //                           UP     DOWN   LEFT   RIGHT  SHOOT
     private boolean[] control = {false, false, false, false, false};
     private int score = 0; // how many enemies defeated
-    private int scoreRound = -1; // how many rounds survived (starting from -1)
+    private int scoreRound = 0; // how many rounds survived
     
     // game objects
     GameObject.FPSController objFPSController;
@@ -103,7 +103,7 @@ public class Renderer implements KeyListener
      */
     private void renderUI()
     {
-        String myHP    = "HP    = " + objMyShip.d_HP;
+        String myHP    = "HP    = " + String.format("%02d", objMyShip.d_HP);
         String myScore = "Score = " + score;
         String myRound = "Round = " + scoreRound;
         myPanel.addCommand(new RenderCommand(1, 0, myHP));
@@ -154,89 +154,97 @@ public class Renderer implements KeyListener
         {
             // randomly spawn enemies if num enemy is 0
             scoreRound++;
-            int num = enemyRand.nextInt((maxEnemiesSpawned - minEnemiesSpawned) + 1) + minEnemiesSpawned;
-            for(int i = 0; i < num; i++)
+            if(scoreRound % 5 == 0)
             {
-                int enemyType = enemyRand.nextInt(1000); // [0, 50) - Enemy C, [50, 400) - Enemy B, [400, 1000) - Enemy A
-                if(enemyType < 50)
+                // every 5 rounds, spawn a boss fight
+                objEnemies.add(new GameObject.EnemyD(maxPosX / 2, 5, maxPosX, maxPosY));
+            }
+            else
+            {
+                int num = enemyRand.nextInt((maxEnemiesSpawned - minEnemiesSpawned) + 1) + minEnemiesSpawned;
+                for(int i = 0; i < num; i++)
                 {
-                    // set offsets of Ship C
-                    int offsetX = 4; int offsetY = 2;
-                    int maxTry = 10;
-                    while(maxTry > 0)
+                    int enemyType = enemyRand.nextInt(1000); // [0, 50) - Enemy C, [50, 400) - Enemy B, [400, 1000) - Enemy A
+                    if(enemyType < 50)
                     {
-                        int posX = enemyRand.nextInt((maxPosX-8)+1) + 4; // [4, maxPosX - 4]
-                        int posY = enemyRand.nextInt((maxPosY/2-1)+1) + 1; // [1, maxPosY / 2]
-                        boolean goodPos = true;
-                        for(GameObject.SpaceShip ship : objEnemies)
+                        // set offsets of Ship C
+                        int offsetX = 4; int offsetY = 2;
+                        int maxTry = 10;
+                        while(maxTry > 0)
                         {
-                            if(Math.abs(ship.xPos - posX) < (ship.offsetX + offsetX + 1) && Math.abs(ship.yPos - posY) < (ship.offsetY + offsetY + 1))
+                            int posX = enemyRand.nextInt((maxPosX-8)+1) + 4; // [4, maxPosX - 4]
+                            int posY = enemyRand.nextInt((maxPosY/2-1)+1) + 1; // [1, maxPosY / 2]
+                            boolean goodPos = true;
+                            for(GameObject.SpaceShip ship : objEnemies)
                             {
-                                // overlap detected
-                                goodPos = false;
+                                if(Math.abs(ship.xPos - posX) < (ship.offsetX + offsetX + 1) && Math.abs(ship.yPos - posY) < (ship.offsetY + offsetY + 1))
+                                {
+                                    // overlap detected
+                                    goodPos = false;
+                                    break;
+                                }
+                            }
+                            if(goodPos)
+                            {
+                                objEnemies.add(new GameObject.EnemyC(posX, posY, maxPosX, maxPosY));
                                 break;
                             }
+                            maxTry--;
                         }
-                        if(goodPos)
-                        {
-                            objEnemies.add(new GameObject.EnemyC(posX, posY, maxPosX, maxPosY));
-                            break;
-                        }
-                        maxTry--;
                     }
-                }
-                else if(enemyType < 400)
-                {
-                    // set offsets of Ship B
-                    int offsetX = 2; int offsetY = 1;
-                    int maxTry = 10;
-                    while(maxTry > 0)
+                    else if(enemyType < 400)
                     {
-                        int posX = enemyRand.nextInt((maxPosX-8)+1) + 4; // [4, maxPosX - 4]
-                        int posY = enemyRand.nextInt((maxPosY/2-1)+1) + 1; // [1, maxPosY / 2]
-                        boolean goodPos = true;
-                        for(GameObject.SpaceShip ship : objEnemies)
+                        // set offsets of Ship B
+                        int offsetX = 2; int offsetY = 1;
+                        int maxTry = 10;
+                        while(maxTry > 0)
                         {
-                            if(Math.abs(ship.xPos - posX) < (ship.offsetX + offsetX + 1) && Math.abs(ship.yPos - posY) < (ship.offsetY + offsetY + 1))
+                            int posX = enemyRand.nextInt((maxPosX-8)+1) + 4; // [4, maxPosX - 4]
+                            int posY = enemyRand.nextInt((maxPosY/2-1)+1) + 1; // [1, maxPosY / 2]
+                            boolean goodPos = true;
+                            for(GameObject.SpaceShip ship : objEnemies)
                             {
-                                // overlap detected
-                                goodPos = false;
+                                if(Math.abs(ship.xPos - posX) < (ship.offsetX + offsetX + 1) && Math.abs(ship.yPos - posY) < (ship.offsetY + offsetY + 1))
+                                {
+                                    // overlap detected
+                                    goodPos = false;
+                                    break;
+                                }
+                            }
+                            if(goodPos)
+                            {
+                                objEnemies.add(new GameObject.EnemyB(posX, posY, maxPosX, maxPosY));
                                 break;
                             }
+                            maxTry--;
                         }
-                        if(goodPos)
-                        {
-                            objEnemies.add(new GameObject.EnemyB(posX, posY, maxPosX, maxPosY));
-                            break;
-                        }
-                        maxTry--;
                     }
-                }
-                else
-                {
-                    // set offsets of Ship A
-                    int offsetX = 1; int offsetY = 0;
-                    int maxTry = 10;
-                    while(maxTry > 0)
+                    else
                     {
-                        int posX = enemyRand.nextInt((maxPosX-8)+1) + 4; // [4, maxPosX - 4]
-                        int posY = enemyRand.nextInt((maxPosY/2-1)+1) + 1; // [1, maxPosY / 2]
-                        boolean goodPos = true;
-                        for(GameObject.SpaceShip ship : objEnemies)
+                        // set offsets of Ship A
+                        int offsetX = 1; int offsetY = 0;
+                        int maxTry = 10;
+                        while(maxTry > 0)
                         {
-                            if(Math.abs(ship.xPos - posX) < (ship.offsetX + offsetX + 1) && Math.abs(ship.yPos - posY) < (ship.offsetY + offsetY + 1))
+                            int posX = enemyRand.nextInt((maxPosX-8)+1) + 4; // [4, maxPosX - 4]
+                            int posY = enemyRand.nextInt((maxPosY/2-1)+1) + 1; // [1, maxPosY / 2]
+                            boolean goodPos = true;
+                            for(GameObject.SpaceShip ship : objEnemies)
                             {
-                                // overlap detected
-                                goodPos = false;
+                                if(Math.abs(ship.xPos - posX) < (ship.offsetX + offsetX + 1) && Math.abs(ship.yPos - posY) < (ship.offsetY + offsetY + 1))
+                                {
+                                    // overlap detected
+                                    goodPos = false;
+                                    break;
+                                }
+                            }
+                            if(goodPos)
+                            {
+                                objEnemies.add(new GameObject.EnemyA(posX, posY, maxPosX, maxPosY));
                                 break;
                             }
+                            maxTry--;
                         }
-                        if(goodPos)
-                        {
-                            objEnemies.add(new GameObject.EnemyA(posX, posY, maxPosX, maxPosY));
-                            break;
-                        }
-                        maxTry--;
                     }
                 }
             }
